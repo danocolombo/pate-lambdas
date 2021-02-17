@@ -1,0 +1,22 @@
+{
+    "name": "aws-lambdas",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "node -e \"(async () => console.log(await require('./generic-start').handler({})))();\"",
+        "getUniqueId": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'getUniqueId'})))();\"",
+        "usersGetByUid": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'getUser', 'payload': {'uid': 'ab473e46be72ad80f64e55b7967e2e3c'}})))();\"",
+        "usersGetByBadUid": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'getUser', 'payload': {'uid': '0'}})))();\"",
+        "locationsGetByUid": "node -e \"(async () => console.log(await require('./p8Locations').handler({'operation': 'getLocation', 'payload': {'uid': '7fa9fdedefd10ad69cd1cfbac4a9175c'}})))();\"",
+        "eventsGetByUid": "node -e \"(async () => console.log(await require('./p8Events').handler({'operation': 'getEvent', 'payload': {'uid': 'c19b499e6d23d4a417a9cbf9c3921293'}})))();\"",
+        "eventsGetActiveEvents": "node -e \"(async () => console.log(await require('./p8Events').handler({'operation': 'getActiveEvents', 'payload': {'uid': 'c19b499e6d23d4a417a9cbf9c3921293'}})))();\"",
+        "eventsGetAllEvents": "node -e \"(async () => console.log(await require('./p8Events').handler({'operation': 'getEvents', 'payload': {'uid': 'c19b499e6d23d4a417a9cbf9c3921293'}})))();\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "aws-sdk": "^2.809.0"
+    }
+}

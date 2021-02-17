@@ -1,0 +1,39 @@
+{
+    "name": "aws-lambdas",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "node -e \"(async () => console.log(await require('./generic-start').handler({})))();\"",
+        "clientGetWBC": "node -e \"(async () => console.log(await require('./meeterClient').handler({'operation': 'getClient', 'payload': {'clientId': 'wbc'}})))();\"",
+        "userBadOperation": "node -e \"(async () => console.log(await require('./meeterClient').handler({'operation': 'bad', 'payload': {'clientId': 'wbc'}})))();\"",
+        "userGetNoOne": "node -e \"(async () => console.log(await require('./meeterUser').handler({'operation': 'authenticate', 'payload': {'uid': '4090ce40-4d32-474e-8df8-2212e70f5f00'}})))();\"",
+        "userGetDano": "node -e \"(async () => console.log(await require('./meeterUser').handler({'operation': 'authenticate', 'payload': {'uid': '4090ce40-4d32-474e-8df8-2212e70f5fee'}})))();\"",
+        "getMeetingByIdAndClient": "node -e \"(async () => console.log(await require('./meeterMeetings').handler({'operation': 'getMeetingByIdAndClient', 'payload': {'id': '5ef918b63598c666597b48cd','clientId': 'wbc'}})))();\"",
+        "getWBCMeetings": "node -e \"(async () => console.log(await require('./meeterMeetings').handler({'operation': 'getAllMeetings', 'payload': {'clientId': 'wbc'}})))();\"",
+        "addTestMeeting": "node -e \"(async () => console.log(await require('./meeterMeetings').handler({'operation': 'createMeeting','payload': {'Item': {'clientId': 'test','meetingDate': '2020-11-15','meetingType': 'TEST','supportRole': 'Dano','title': 'addTestMeeting'}}})))();\"",
+        "getAllMeetings": "node -e \"(async () => console.log(await require('./meeterMeetings').handler({'operation': 'getAllMeetings', 'payload': {'clientId': 'wbc'}})))();\"",
+        "putMeeting": "node -e \"(async () => console.log(await require('./meeterMeetings').handler({'operation': 'putMeeting', 'payload': {'Item': {'cafeCoordinator': 'TBD', 'clientId': 'test', 'facilitator': 'TBD', 'mealCoordinator': 'TBD', 'meetingDate': '2020-12-14', 'id': '0bbc1641abbad6183d6cc948d27eb40d', 'meetingType': 'Testimony', 'title': 'TBD'}}})))();\"",
+        "getWBCFutures": "node -e \"(async () => console.log(await require('./meeterMeetings').handler({'operation': 'getFutureMeetings', 'payload': {'clientId': 'wbc'}})))();\"",
+        "getWBCHistory": "node -e \"(async () => console.log(await require('./meeterMeetings').handler({'operation': 'getHistoricMeetings', 'payload': {'clientId': 'wbc'}})))();\"",
+        "getDanoByNameAtWynnbrook": "node -e \"(async () => console.log(await require('./meeterPeople').handler({'operation': 'getPeopleByNameAndClient', 'payload': {'clientId': 'wbc','name': 'Dano Colombo'}})))();\"",
+        "getDanoAtWynnbrookById": "node -e \"(async () => console.log(await require('./meeterPeople').handler({'operation': 'getPeopleByIdAndClient', 'payload': {'id': '95228bede5d802651334175a7179e1d0','clientId': 'wbc'}})))();\"",
+        "getDanoByName": "node -e \"(async () => console.log(await require('./meeterPeople').handler({'operation': 'getPeopleByName', 'payload': {'name': 'Dano Colombo'}})))();\"",
+        "getWynnbrookPeeps": "node -e \"(async () => console.log(await require('./meeterPeople').handler({'operation': 'getAllPeoleByClient', 'payload': {'clientId': 'wbc'}})))();\"",
+        "getGroupById": "node -e \"(async () => console.log(await require('./meeterGroups').handler({'operation': 'getGroupById', 'payload': {'groupId': '2c9d87bc48946bbcc30b47c3e92477c5'}})))();\"",
+        "1getGroupByIdAndFAIL": "node -e \"(async () => console.log(await require('./meeterGroups').handler({'operation': 'getGroupById', 'payload': {'groupId': '3a822c59000e4a4f4a3c71f68e70667A'}})))();\"",
+        "getGroupsByMeetingId": "node -e \"(async () => console.log(await require('./meeterGroups').handler({'operation': 'getGroupsByMeetingId', 'payload': {'meetingId': '6a1d95fd7d5c96267e62197d96c1c744'}})))();\"",
+        "addAGroup": "node -e \"(async () => console.log(await require('./meeterGroups').handler({'operation': 'addGroup', 'payload': {'Item':{'meetingId': '6a1d95fd7d5c96267e62197d96c1c888','clientId':'test','title':'test'}}})))();\"",
+        "updateGroup": "node -e \"(async () => console.log(await require('./meeterGroups').handler({'operation': 'updateGroup', 'payload': {'Item':{'id': 'f64a33eac403de0ce4eb7c136562506c', 'meetingId': '6a1d95fd7d5c96267e62197d96c1c744','clientId':'wbc','title':'updated title'}}})))();\"",
+        "deleteGroup": "node -e \"(async () => console.log(await require('./meeterGroups').handler({'operation': 'deleteGroup', 'payload': {'Key':{'id': '57a4b5416f00a8edc76e28d1fe7674b1', 'clientId': 'test'}}})))();\"",
+        "getMeetingConfigs": "node -e \"(async () => console.log(await require('./meeterClient').handler({'operation': 'getConfigs', 'payload': {'clientId': 'wbc'}})))();\"",
+        "getDefaultGroups": "node -e \"(async () => console.log(await require('./meeterClient').handler({'operation': 'getDefaultGroups', 'payload': {'clientId': 'wbc'}})))();\"",
+        "updateNewConfigs": "node -e \"(async () => console.log(await require('./meeterClient').handler({'operation': 'updateMeeterConfigs', 'payload': {'clientId': 'wbc', 'config': 'youth', 'setting': 'false'}})))();\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "aws-sdk": "^2.809.0"
+    }
+}
