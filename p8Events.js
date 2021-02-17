@@ -76,43 +76,35 @@ async function getEvent(var1) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
 }
-async function getActiveEvents() {
-    const theDate = new Date(Date.now());
-    const tDay = theDate.toISOString().substring(0, 10);
-    console.log('tDay: ' + tDay);
-    const mParams = {
+async function getEvents() {
+    // get all events
+    const tParams = {
         TableName: 'p8Events',
-        IndexName: 'eventDate-index',
-        KeyConditionExpression: 'eventDate >= :v_tDay',
-        ExpressionAttributeValues: {
-            ':v_tDay': tDay,
-        },
     };
     try {
         // console.log('BEFORE dynamo query');
-        const data = await dynamo.query(mParams).promise();
+        const data = await dynamo.scan(tParams).promise();
         // console.log(data);
         return data;
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
-    return tDay;
 }
-async function getEvents() {
+async function getActiveEvents() {
+    //returning events today or future
     const theDate = new Date(Date.now());
     const tDay = theDate.toISOString().substring(0, 10);
-    console.log('tDay: ' + tDay);
-    const mParams = {
+    const targetDate = tDay.split('-').join('');
+    const uParams = {
         TableName: 'p8Events',
-        IndexName: 'eventDate-index',
-        KeyConditionExpression: 'eventDate >= :v_tDay',
         ExpressionAttributeValues: {
-            ':v_tDay': tDay,
+            ':v_date': targetDate,
         },
+        FilterExpression: 'eventDate >= :v_date',
     };
     try {
         // console.log('BEFORE dynamo query');
-        const data = await dynamo.query(mParams).promise();
+        const data = await dynamo.scan(uParams).promise();
         // console.log(data);
         return data;
     } catch (err) {
