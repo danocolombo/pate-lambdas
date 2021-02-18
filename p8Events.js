@@ -45,6 +45,16 @@ exports.handler = async (event, context, callback) => {
                 body: eData,
             };
             return response;
+        case 'createEvent':
+            event.payload.TableName = 'p8Events';
+
+            // create unique id
+            let eventId = crypto.randomBytes(16).toString('base64');
+            event.payload.Item.uid = eventId.toString();
+            let theEvent = await dynamo.put(event.payload).promise();
+
+            return theEvent;
+            break;
         case 'saveEvent':
             //this will save the event to the database,
             //but we do require some values before
