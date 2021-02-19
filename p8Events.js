@@ -12,14 +12,17 @@ var dynamo = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
 
 exports.handler = async (event, context, callback) => {
     //console.log('Received event:', JSON.stringify(event, null, 2));
-
+    
     var operation = event.operation;
     let payload = {
         status: '400',
         body: {
-            // message: 'Pate System Error',
+            message: ""// message: 'Pate System Error',
         },
     };
+    
+    var table = "p8Events";
+    let theEvent = null;
     var eData = '';
     var response = '';
     switch (operation) {
@@ -36,7 +39,7 @@ exports.handler = async (event, context, callback) => {
                 statusCode: 200,
                 body: eData,
             };
-            return response;
+            return JSON.stringify(response);
         case 'getActiveEvents':
             // return all events not in past
             eData = await getActiveEvents();
@@ -45,84 +48,28 @@ exports.handler = async (event, context, callback) => {
                 body: eData,
             };
             return response;
+        case 'deleteEvent':
+            response = deleteEvent(event, payload);
+            return response;
         case 'createEvent':
             event.payload.TableName = 'p8Events';
 
             // create unique id
             let eventId = crypto.randomBytes(16).toString('base64');
             event.payload.Item.uid = eventId.toString();
-            let theEvent = await dynamo.put(event.payload).promise();
+            theEvent = await dynamo.put(event.payload).promise();
 
             return theEvent;
             break;
-        case 'saveEvent':
-            //this will save the event to the database,
-            //but we do require some values before
-            //taking action
-            //========================================
-            let errMsg = {};
-            requirementsMet = true;
-            if (!event.payload.Item.location.hasOwnProperty('name')) {
-                requirementsMet = false;
-                errMsg = { locaton: { name: 'not satisfied' } };
-            }
-            if (!event.payload.Item.location.hasOwnProperty('state')) {
-                requirementsMet = false;
-                errMsg = { location: { state: 'not satisfied' } };
-            }
-            if (!event.payload.Item.location.hasOwnProperty('city')) {
-                requirementsMet = false;
-                errMsg = { location: { city: 'not satisfied' } };
-            }
-            if (!event.payload.Item.hasOwnProperty('startTime')) {
-                requirementsMet = false;
-                errMsg = { startTime: 'not satisfied' };
-            }
-            if (!event.payload.Item.hasOwnProperty('endTime')) {
-                requirementsMet = false;
-                errMsg = { endTime: 'not satisfied' };
-            }
-            if (!event.payload.Item.hasOwnProperty('eventDate')) {
-                requirementsMet = false;
-                errMsg = { eventDate: 'not satisfied' };
-            }
-            if (!event.payload.Item.contact.hasOwnProperty('name')) {
-                requirementsMet = false;
-                errMsg = { contact: { name: 'not satisfied' } };
-            }
-            if (!event.payload.Item.coordinator.hasOwnProperty('name')) {
-                requirementsMet = false;
-                errMsg = { coordinator: { name: 'not satisfied' } };
-            }
-            if (!event.payload.Item.coordinator.hasOwnProperty('uid')) {
-                requirementsMet = false;
-                errMsg = { coordinator: { uid: 'not satisfied' } };
-            }
-            if (requirementsMet) {
-                //check to see if the Item has id or is new
-                if (!event.payload.Item.hasOwnProperty('uid')) {
-                    let newId = getUniqueId();
-                    console.log('newId:' + newId);
-                    event.payload.Item.uid = newId;
-                }
+        case 'updateEvent':
+            if (!event.payload.Item.hasOwnProperty('uid')) {
+                let err = {"Message": "ERROR-uid is required"};
+                return err;
+            }    
+            event.payload.TableName = 'p8Events';
+            theEvent = await dynamo.put(event.payload).promise();
 
-                event.payload.TableName = 'p8Events';
-                let eventResponse = null;
-                try {
-                    eventResponse = await dynamo.put(event.payload).promise();
-                    return event.payload;
-                } catch {
-                    return eventResponse;
-                }
-            } else {
-                payload.status = '406';
-                payload.body.message =
-                    'Pate: Request Not Acceptable. (' +
-                    operation +
-                    ') Requirements Not Met';
-                payload.errorMessage = errMsg;
-                return payload;
-            }
+            return theEvent;
             break;
         case 'echo':
             callback(null, 'Success');
@@ -169,6 +116,37 @@ async function getEvents() {
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
+}
+async function deleteEvent(event, payload){
+    let requirementsMet = true;
+    console.log('IN');
+    console.log(JSON.stringify(event));
+    if (!event.payload.Key.hasOwnProperty('uid')) {
+        requirementsMet = false;
+    }
+    if (requirementsMet) {
+        event.payload.TableName = 'p8Events';
+        let g = null;
+        try {
+            g = await dynamo.delete(event.payload).promise();
+            return event.payload;
+        } catch (error) {
+            let returnMsg =
+                'Error Deleting: ' +
+                error +
+                '\n ' +
+                g +
+                '\n' +
+                event.payload;
+            return returnMsg;
+        }
+    } else {
+        payload.status = '406';
+        payload.body.message =
+            'Pate Error: deleting event';
+        return payload;
+    }
+
 }
 async function getActiveEvents() {
     //returning events today or future
