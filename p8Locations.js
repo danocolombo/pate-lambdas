@@ -1,4 +1,5 @@
 var AWS = require('aws-sdk');
+const crypto = require('crypto');
 var dynamo = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
 
 /**

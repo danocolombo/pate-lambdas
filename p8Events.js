@@ -58,9 +58,8 @@ exports.handler = async (event, context, callback) => {
             let eventId = crypto.randomBytes(16).toString('base64');
             event.payload.Item.uid = eventId.toString();
             theEvent = await dynamo.put(event.payload).promise();
-
             return event.payload;
-            break;
+
         case 'updateEvent':
             if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
@@ -68,9 +67,7 @@ exports.handler = async (event, context, callback) => {
             }
             event.payload.TableName = 'p8Events';
             theEvent = await dynamo.put(event.payload).promise();
-
             return event.payload;
-            break;
         case 'echo':
             callback(null, 'Success');
             break;
@@ -81,8 +78,7 @@ exports.handler = async (event, context, callback) => {
             payload.status = '400';
             payload.body.message =
                 'PATE System Error: operation (' + operation + ') unsupport';
-            //return payload;
-            callback('Unknown operation: ${operation}');
+            return payload;
     }
 };
 async function getEvent(var1) {
