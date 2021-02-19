@@ -1,4 +1,5 @@
 var AWS = require('aws-sdk');
+const crypto = require('crypto');
 var dynamo = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
 
 /**
@@ -44,6 +45,85 @@ exports.handler = async (event, context, callback) => {
                 body: eData,
             };
             return response;
+        case 'createEvent':
+            event.payload.TableName = 'p8Events';
+
+            // create unique id
+            let eventId = crypto.randomBytes(16).toString('base64');
+            event.payload.Item.uid = eventId.toString();
+            let theEvent = await dynamo.put(event.payload).promise();
+
+            return theEvent;
+            break;
+        case 'saveEvent':
+            //this will save the event to the database,
+            //but we do require some values before
+            //taking action
+            //========================================
+            let errMsg = {};
+            requirementsMet = true;
+            if (!event.payload.Item.location.hasOwnProperty('name')) {
+                requirementsMet = false;
+                errMsg = { locaton: { name: 'not satisfied' } };
+            }
+            if (!event.payload.Item.location.hasOwnProperty('state')) {
+                requirementsMet = false;
+                errMsg = { location: { state: 'not satisfied' } };
+            }
+            if (!event.payload.Item.location.hasOwnProperty('city')) {
+                requirementsMet = false;
+                errMsg = { location: { city: 'not satisfied' } };
+            }
+            if (!event.payload.Item.hasOwnProperty('startTime')) {
+                requirementsMet = false;
+                errMsg = { startTime: 'not satisfied' };
+            }
+            if (!event.payload.Item.hasOwnProperty('endTime')) {
+                requirementsMet = false;
+                errMsg = { endTime: 'not satisfied' };
+            }
+            if (!event.payload.Item.hasOwnProperty('eventDate')) {
+                requirementsMet = false;
+                errMsg = { eventDate: 'not satisfied' };
+            }
+            if (!event.payload.Item.contact.hasOwnProperty('name')) {
+                requirementsMet = false;
+                errMsg = { contact: { name: 'not satisfied' } };
+            }
+            if (!event.payload.Item.coordinator.hasOwnProperty('name')) {
+                requirementsMet = false;
+                errMsg = { coordinator: { name: 'not satisfied' } };
+            }
+            if (!event.payload.Item.coordinator.hasOwnProperty('uid')) {
+                requirementsMet = false;
+                errMsg = { coordinator: { uid: 'not satisfied' } };
+            }
+            if (requirementsMet) {
+                //check to see if the Item has id or is new
+                if (!event.payload.Item.hasOwnProperty('uid')) {
+                    let newId = getUniqueId();
+                    console.log('newId:' + newId);
+                    event.payload.Item.uid = newId;
+                }
+
+                event.payload.TableName = 'p8Events';
+                let eventResponse = null;
+                try {
+                    eventResponse = await dynamo.put(event.payload).promise();
+                    return event.payload;
+                } catch {
+                    return eventResponse;
+                }
+            } else {
+                payload.status = '406';
+                payload.body.message =
+                    'Pate: Request Not Acceptable. (' +
+                    operation +
+                    ') Requirements Not Met';
+                payload.errorMessage = errMsg;
+                return payload;
+            }
+            break;
         case 'echo':
             callback(null, 'Success');
             break;
@@ -76,46 +156,54 @@ async function getEvent(var1) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
 }
-async function getActiveEvents() {
-    const theDate = new Date(Date.now());
-    const tDay = theDate.toISOString().substring(0, 10);
-    console.log('tDay: ' + tDay);
-    const mParams = {
-        TableName: 'p8Events',
-        IndexName: 'eventDate-index',
-        KeyConditionExpression: 'eventDate >= :v_tDay',
-        ExpressionAttributeValues: {
-            ':v_tDay': tDay,
-        },
-    };
-    try {
-        // console.log('BEFORE dynamo query');
-        const data = await dynamo.query(mParams).promise();
-        // console.log(data);
-        return data;
-    } catch (err) {
-        console.log('FAILURE in dynamoDB call', err.message);
-    }
-    return tDay;
-}
 async function getEvents() {
-    const theDate = new Date(Date.now());
-    const tDay = theDate.toISOString().substring(0, 10);
-    console.log('tDay: ' + tDay);
-    const mParams = {
+    // get all events
+    const tParams = {
         TableName: 'p8Events',
-        IndexName: 'eventDate-index',
-        KeyConditionExpression: 'eventDate >= :v_tDay',
-        ExpressionAttributeValues: {
-            ':v_tDay': tDay,
-        },
     };
     try {
         // console.log('BEFORE dynamo query');
-        const data = await dynamo.query(mParams).promise();
+        const data = await dynamo.scan(tParams).promise();
         // console.log(data);
         return data;
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
+}
+async function getActiveEvents() {
+    //returning events today or future
+    const theDate = new Date(Date.now());
+    const tDay = theDate.toISOString().substring(0, 10);
+    const targetDate = tDay.split('-').join('');
+    const uParams = {
+        TableName: 'p8Events',
+        ExpressionAttributeValues: {
+            ':v_date': targetDate,
+        },
+        FilterExpression: 'eventDate >= :v_date',
+    };
+    try {
+        // console.log('BEFORE dynamo query');
+        const data = await dynamo.scan(uParams).promise();
+        // console.log(data);
+        return data;
+    } catch (err) {
+        console.log('FAILURE in dynamoDB call', err.message);
+    }
+}
+function getUniqueId() {
+    //this generates a unique ID based on this specific time
+    // Difining algorithm
+    const algorithm = 'aes-256-cbc';
+    // Defining key
+    const key = crypto.randomBytes(32);
+    // Defining iv
+    const iv = crypto.randomBytes(16);
+    let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+    //get the current time...
+    let n = Date.now();
+    let encrypted = cipher.update(n.toString());
+    // Using concatenation
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return encrypted.toString('hex');
 }

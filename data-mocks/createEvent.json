@@ -1,0 +1,25 @@
+{
+    "operation": "createEvent",
+    "payload": {
+        "Item": {
+            "startTime": "13:00",
+            "attendees": 0,
+            "location": {
+                "name": "BHAM Baptists",
+                "id": "2a7f73c4a7f8601f243b1a89ccc29d8d",
+                "city": "Birmingham",
+                "street": "123 Main St.",
+                "postalCode": 23456
+            },
+            "endTime": "16:00",
+            "eventDate": "20210322",
+            "contact": {
+                "name": "John Doe"
+            },
+            "coordinator": {
+                "name": "Tyler",
+                "id": "bc473e46be72ad80f64e55b7967e2e4d"
+            }
+        }
+    }
+}
