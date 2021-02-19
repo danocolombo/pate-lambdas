@@ -12,16 +12,16 @@ var dynamo = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
 
 exports.handler = async (event, context, callback) => {
     //console.log('Received event:', JSON.stringify(event, null, 2));
-    
+
     var operation = event.operation;
     let payload = {
         status: '400',
         body: {
-            message: ""// message: 'Pate System Error',
+            message: '', // message: 'Pate System Error',
         },
     };
-    
-    var table = "p8Events";
+
+    var table = 'p8Events';
     let theEvent = null;
     var eData = '';
     var response = '';
@@ -59,17 +59,17 @@ exports.handler = async (event, context, callback) => {
             event.payload.Item.uid = eventId.toString();
             theEvent = await dynamo.put(event.payload).promise();
 
-            return theEvent;
+            return event.payload;
             break;
         case 'updateEvent':
             if (!event.payload.Item.hasOwnProperty('uid')) {
-                let err = {"Message": "ERROR-uid is required"};
+                let err = { Message: 'ERROR-uid is required' };
                 return err;
-            }    
+            }
             event.payload.TableName = 'p8Events';
             theEvent = await dynamo.put(event.payload).promise();
 
-            return theEvent;
+            return event.payload;
             break;
         case 'echo':
             callback(null, 'Success');
@@ -117,7 +117,7 @@ async function getEvents() {
         console.log('FAILURE in dynamoDB call', err.message);
     }
 }
-async function deleteEvent(event, payload){
+async function deleteEvent(event, payload) {
     let requirementsMet = true;
     console.log('IN');
     console.log(JSON.stringify(event));
@@ -132,21 +132,14 @@ async function deleteEvent(event, payload){
             return event.payload;
         } catch (error) {
             let returnMsg =
-                'Error Deleting: ' +
-                error +
-                '\n ' +
-                g +
-                '\n' +
-                event.payload;
+                'Error Deleting: ' + error + '\n ' + g + '\n' + event.payload;
             return returnMsg;
         }
     } else {
         payload.status = '406';
-        payload.body.message =
-            'Pate Error: deleting event';
+        payload.body.message = 'Pate Error: deleting event';
         return payload;
     }
-
 }
 async function getActiveEvents() {
     //returning events today or future

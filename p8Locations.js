@@ -36,14 +36,14 @@ exports.handler = async (event, context, callback) => {
             let locationId = getUniqueId();
             event.payload.Item.uid = locationId.toString();
             theLocation = await dynamo.put(event.payload).promise();
-            return theLocation;
+            return event.payload;
         case 'updateLocation':
             if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
                 return err;
             }
             theLocation = await dynamo.put(event.payload).promise();
-            return theLocation;
+            return event.payload;
         case 'deleteLocation':
             response = deleteLocation(event, payload);
             return response;
