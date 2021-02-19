@@ -16,30 +16,43 @@ exports.handler = async (event, context, callback) => {
     let payload = {
         status: '400',
         body: {
-            // message: 'Pate System Error',
+            message: '', // message: 'Pate System Error',
         },
     };
-    var uData = '';
+    let theLocation = null;
+    var response = '';
+    var lData = '';
+    event.payload.TableName = 'p8Locations';
     switch (operation) {
         case 'getLocation':
-            uData = await getLocation(event.payload.uid);
-            const response = {
+            lData = await getLocation(event.payload.uid);
+            response = {
                 statusCode: 200,
-                body: uData,
+                body: lData,
             };
             return response;
-        case 'echo':
-            callback(null, 'Success');
-            break;
-        case 'ping':
-            callback(null, 'pong');
-            break;
+        case 'createLocation':
+            // create unique id
+            let locationId = getUniqueId();
+            event.payload.Item.uid = locationId.toString();
+            theLocation = await dynamo.put(event.payload).promise();
+            return theLocation;
+        case 'updateLocation':
+            if (!event.payload.Item.hasOwnProperty('uid')) {
+                let err = { Message: 'ERROR-uid is required' };
+                return err;
+            }
+            theLocation = await dynamo.put(event.payload).promise();
+            return theLocation;
+        case 'deleteLocation':
+            response = deleteLocation(event, payload);
+            return response;
         default:
             payload.status = '400';
             payload.body.message =
                 'PATE System Error: operation (' + operation + ') unsupport';
             //return payload;
-            callback('Unknown operation: ${operation}');
+            return payload;
     }
 };
 async function getLocation(var1) {
@@ -60,24 +73,41 @@ async function getLocation(var1) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
 }
-async function getActiveEvents() {
-    const evnt = new Date(now);
-    console.log('tDay: ' + evnt.toISOString());
-    // const mParams = {
-    //     TableName: 'p8Events',
-    //     IndexName: 'clientId-index',
-    //     KeyConditionExpression: 'clientId = :v_id',
-    //     ExpressionAttributeValues: {
-    //         ':v_id': var1,
-    //     },
-    // };
-    // try {
-    //     // console.log('BEFORE dynamo query');
-    //     const data = await dynamo.query(mParams).promise();
-    //     // console.log(data);
-    //     return data;
-    // } catch (err) {
-    //     console.log('FAILURE in dynamoDB call', err.message);
-    // }
-    return 'TEST';
+async function deleteLocation(event, payload) {
+    let requirementsMet = true;
+    if (!event.payload.Key.hasOwnProperty('uid')) {
+        requirementsMet = false;
+    }
+    if (requirementsMet) {
+        // event.payload.TableName = 'p8Events';
+        let g = null;
+        try {
+            g = await dynamo.delete(event.payload).promise();
+            return event.payload;
+        } catch (error) {
+            let returnMsg =
+                'Error Deleting: ' + error + '\n ' + g + '\n' + event.payload;
+            return returnMsg;
+        }
+    } else {
+        payload.status = '406';
+        payload.body.message = 'Pate Error: deleting location';
+        return payload;
+    }
+}
+function getUniqueId() {
+    //this generates a unique ID based on this specific time
+    // Difining algorithm
+    const algorithm = 'aes-256-cbc';
+    // Defining key
+    const key = crypto.randomBytes(32);
+    // Defining iv
+    const iv = crypto.randomBytes(16);
+    let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+    //get the current time...
+    let n = Date.now();
+    let encrypted = cipher.update(n.toString());
+    // Using concatenation
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return encrypted.toString('hex');
 }

@@ -1,0 +1,19 @@
+{
+    "operation": "createLocation",
+    "payload": {
+        "Item": {
+            "city": "Catula",
+
+            "contact": {
+                "name": "Lorie",
+                "contactEmail": "lorie@gmail.com",
+                "phone": "7067654321"
+            },
+            "churchName": "Emmanuel Baptist Church",
+            "phone": 7063224266,
+            "postalCode": 31804,
+            "address1": "2980 US-27",
+            "state": "GA"
+        }
+    }
+}

@@ -5,6 +5,10 @@
     "main": "index.js",
     "scripts": {
         "test": "node -e \"(async () => console.log(await require('./generic-start').handler({})))();\"",
+        "locationCreate": "node -e \"(async () => console.log(await require('./p8Locations').handler({'operation': 'createLocation','payload': {'Item': {'city': 'TestTown','contact': {'name': 'Mr. Contact','contactEmail': 'contact@gmail.com','phone': '1234567890'},'churchName': 'Church Name','phone': 1234567890,'postalCode': 12345,'address': '123 Main St.','state': '??'}}})))();\"",
+        "locationGet": "node -e \"(async () => console.log(await require('./p8Locations').handler({'operation': 'getLocation', 'payload': {'uid': '3cb2828f48ead2b5358357d0f7e65472'}})))();\"",
+        "locationUpdate": "node -e \"(async () => console.log(await require('./p8Locations').handler({'operation': 'updateLocation','payload': {'Item': {'uid': '3cb2828f48ead2b5358357d0f7e65472','city': 'TestTown','contact': {'name': 'Mr. Contact','contactEmail': 'contact@gmail.com','phone': '1234567890'},'churchName': 'Church Name','phone': 1234567890,'postalCode': 12345,'address': '9 Main St.','state': '??'}}})))();\"",
+        "locationDelete": "node -e \"(async () => console.log(await require('./p8Locations').handler({'operation': 'deleteLocation', 'payload': {'Key':{'uid': '3cb2828f48ead2b5358357d0f7e65472'}}})))();\"",
         "getUniqueId": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'getUniqueId'})))();\"",
         "usersGetByUid": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'getUser', 'payload': {'uid': 'ab473e46be72ad80f64e55b7967e2e3c'}})))();\"",
         "usersGetByBadUid": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'getUser', 'payload': {'uid': '0'}})))();\"",
