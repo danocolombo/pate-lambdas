@@ -1,0 +1,23 @@
+{
+    "uid": "65ff55fb33fe4c0447b086188f2e9b1f",
+    "startTime": "13:00",
+    "attendees": 0,
+    "location": {
+        "name": "Cascade Hills Church",
+        "id": "2a7f73c4a7f8601f243b1a89ccc29d7c",
+        "city": "Columbus",
+        "street": "123 53rd St.",
+        "postalCode": 31914
+    },
+    "endTime": "16:00",
+    "eventDate": "20210501",
+    "contact": {
+        "name": "Tabith Heath"
+    },
+    "coordinator": {
+        "name": "Dano Colombo",
+        "id": "ab473e46be72ad80f64e55b7967e2e3c",
+        "phone": 7066042494,
+        "email": "gacrleader@gmail.com"
+    }
+}

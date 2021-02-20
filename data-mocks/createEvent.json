@@ -5,20 +5,22 @@
             "startTime": "13:00",
             "attendees": 0,
             "location": {
-                "name": "BHAM Baptists",
+                "name": "Wynnbrook Baptist Church",
                 "id": "2a7f73c4a7f8601f243b1a89ccc29d8d",
-                "city": "Birmingham",
-                "street": "123 Main St.",
-                "postalCode": 23456
+                "city": "Columbus",
+                "street": "500 River Knoll Way",
+                "postalCode": 31904
             },
             "endTime": "16:00",
-            "eventDate": "20210322",
+            "eventDate": "20210220",
             "contact": {
-                "name": "John Doe"
+                "name": "Kevin"
             },
             "coordinator": {
-                "name": "Tyler",
-                "id": "bc473e46be72ad80f64e55b7967e2e4d"
+                "name": "Dano Colombo",
+                "id": "ab473e46be72ad80f64e55b7967e2e3c",
+                "phone": 7066042494,
+                "email": "gacrleader@gmail.com"
             }
         }
     }

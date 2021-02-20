@@ -20,33 +20,33 @@ exports.handler = async (event, context, callback) => {
             message: '', // message: 'Pate System Error',
         },
     };
-    let theLocation = null;
+    let theRegistration = null;
     var response = '';
-    var lData = '';
-    event.payload.TableName = 'p8Locations';
+    var rData = '';
+    event.payload.TableName = 'p8Registrations';
     switch (operation) {
-        case 'getLocation':
-            lData = await getLocation(event.payload.uid);
+        case 'getRegistration':
+            rData = await getRegistration(event.payload.uid);
             response = {
                 statusCode: 200,
-                body: lData,
+                body: rData,
             };
             return response;
-        case 'createLocation':
+        case 'createRegistration':
             // create unique id
-            let locationId = getUniqueId();
-            event.payload.Item.uid = locationId.toString();
-            theLocation = await dynamo.put(event.payload).promise();
+            let registrationId = getUniqueId();
+            event.payload.Item.uid = registrationId.toString();
+            theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
-        case 'updateLocation':
+        case 'updateRegistration':
             if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
                 return err;
             }
-            theLocation = await dynamo.put(event.payload).promise();
+            theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
-        case 'deleteLocation':
-            response = deleteLocation(event, payload);
+        case 'deleteRegistration':
+            response = deleteRegistration(event, payload);
             return response;
         default:
             payload.status = '400';
@@ -56,9 +56,9 @@ exports.handler = async (event, context, callback) => {
             return payload;
     }
 };
-async function getLocation(var1) {
+async function getRegistration(var1) {
     const uParams = {
-        TableName: 'p8Locations',
+        TableName: 'p8Registrations',
         KeyConditionExpression: 'uid = :v_uid',
         ExpressionAttributeValues: {
             ':v_uid': var1,
@@ -74,7 +74,7 @@ async function getLocation(var1) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
 }
-async function deleteLocation(event, payload) {
+async function deleteRegistration(event, payload) {
     let requirementsMet = true;
     if (!event.payload.Key.hasOwnProperty('uid')) {
         requirementsMet = false;
