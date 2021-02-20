@@ -1,4 +1,5 @@
 var AWS = require('aws-sdk');
+const crypto = require('crypto');
 var dynamo = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
 
 /**
@@ -19,7 +20,10 @@ exports.handler = async (event, context, callback) => {
             // message: 'Pate System Error',
         },
     };
+    let theUser = null;
+    var response = '';
     var uData = '';
+    event.payload.TableName = 'p8Users';
     switch (operation) {
         case 'getUser':
             uData = await getUser(event.payload.uid);
@@ -31,18 +35,27 @@ exports.handler = async (event, context, callback) => {
         case 'getUniqueId':
             let uid = getUniqueId();
             return uid;
-        case 'echo':
-            callback(null, 'Success');
-            break;
-        case 'ping':
-            callback(null, 'pong');
-            break;
+        case 'createUser':
+            // create unique id
+            let userId = getUniqueId();
+            event.payload.Item.uid = userId.toString();
+            theUser = await dynamo.put(event.payload).promise();
+            return event.payload;
+        case 'updateUser':
+            if (!event.payload.Item.hasOwnProperty('uid')) {
+                let err = { Message: 'ERROR-uid is required' };
+                return err;
+            }
+            theUser = await dynamo.put(event.payload).promise();
+            return event.payload;
+        case 'deleteUser':
+            response = deleteUser(event, payload);
+            return response;
         default:
             payload.status = '400';
             payload.body.message =
                 'PATE System Error: operation (' + operation + ') unsupport';
-            //return payload;
-            callback('Unknown operation: ${operation}');
+            return payload;
     }
 };
 async function getUser(var1) {
@@ -61,6 +74,27 @@ async function getUser(var1) {
         return data;
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
+    }
+}
+async function deleteUser(event, payload) {
+    let requirementsMet = true;
+    if (!event.payload.Key.hasOwnProperty('uid')) {
+        requirementsMet = false;
+    }
+    if (requirementsMet) {
+        let g = null;
+        try {
+            g = await dynamo.delete(event.payload).promise();
+            return event.payload;
+        } catch (error) {
+            let returnMsg =
+                'Error Deleting: ' + error + '\n ' + g + '\n' + event.payload;
+            return returnMsg;
+        }
+    } else {
+        payload.status = '406';
+        payload.body.message = 'Pate Error: deleting location';
+        return payload;
     }
 }
 function getUniqueId() {
