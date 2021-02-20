@@ -1,0 +1,8 @@
+{
+    "operation": "createUser",
+    "payload": {
+        "Item": {
+            "displayName": "Dano Colombo","role": "superuser","email": "danocolombo@gmail.com","phone": "7066042494","status": "active"
+        }
+    }
+}

@@ -27,11 +27,11 @@ exports.handler = async (event, context, callback) => {
     switch (operation) {
         case 'getUser':
             uData = await getUser(event.payload.uid);
-            const response = {
+            response = {
                 statusCode: 200,
                 body: uData,
             };
-            return response;
+            return response; 
         case 'getUniqueId':
             let uid = getUniqueId();
             return uid;
