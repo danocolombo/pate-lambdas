@@ -1,0 +1,20 @@
+{
+    "operation": "createRegistration",
+    "payload": {
+        "Item": {
+            "eventUID": "65ff55fb33fe4c0447b086188f2e9b1f",
+            "registrar": {
+                "name": "Bob Jones",
+                "contactEmail": "bj@gmail.com",
+                "phone": "4041234321",
+                "address":{
+                    "street":"123 Main St.",
+                    "city":"somewhere",
+                    "state": "??",
+                    "postalCode": 12345
+                }
+            },
+            "attendees": 1
+        }
+    }
+}

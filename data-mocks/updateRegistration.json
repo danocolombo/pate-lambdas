@@ -1,0 +1,1 @@
+"registrationUpdate": "node -e \"(async () => console.log(await require('./p8Registrations').handler({{'operation': 'updateRegistration','payload': {'Item': {'uid':'f3f2a72ba353dcec4b94c62bd18c80c7','eventUID': '65ff55fb33fe4c0447b086188f2e9b1f','registrar':{'name':'Jane Doe','email':'jd@gmail.com','phone':'4041234321','address':{'street':'1 main st.'},'attendees':1}}})))();\"",

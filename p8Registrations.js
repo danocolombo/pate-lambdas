@@ -17,50 +17,48 @@ exports.handler = async (event, context, callback) => {
     let payload = {
         status: '400',
         body: {
-            // message: 'Pate System Error',
+            message: '', // message: 'Pate System Error',
         },
     };
-    let theUser = null;
+    let theRegistration = null;
     var response = '';
-    var uData = '';
-    event.payload.TableName = 'p8Users';
+    var rData = '';
+    event.payload.TableName = 'p8Registrations';
     switch (operation) {
-        case 'getUser':
-            uData = await getUser(event.payload.uid);
+        case 'getRegistration':
+            rData = await getRegistration(event.payload.uid);
             response = {
                 statusCode: 200,
-                body: uData,
+                body: rData,
             };
-            return response; 
-        case 'getUniqueId':
-            let uid = getUniqueId();
-            return uid;
-        case 'createUser':
+            return response;
+        case 'createRegistration':
             // create unique id
-            let userId = getUniqueId();
-            event.payload.Item.uid = userId.toString();
-            theUser = await dynamo.put(event.payload).promise();
+            let registrationId = getUniqueId();
+            event.payload.Item.uid = registrationId.toString();
+            theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
-        case 'updateUser':
+        case 'updateRegistration':
             if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
                 return err;
             }
-            theUser = await dynamo.put(event.payload).promise();
+            theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
-        case 'deleteUser':
-            response = deleteUser(event, payload);
+        case 'deleteRegistration':
+            response = deleteRegistration(event, payload);
             return response;
         default:
             payload.status = '400';
             payload.body.message =
                 'PATE System Error: operation (' + operation + ') unsupport';
+            //return payload;
             return payload;
     }
 };
-async function getUser(var1) {
+async function getRegistration(var1) {
     const uParams = {
-        TableName: 'p8Users',
+        TableName: 'p8Registrations',
         KeyConditionExpression: 'uid = :v_uid',
         ExpressionAttributeValues: {
             ':v_uid': var1,
@@ -76,12 +74,13 @@ async function getUser(var1) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
 }
-async function deleteUser(event, payload) {
+async function deleteRegistration(event, payload) {
     let requirementsMet = true;
     if (!event.payload.Key.hasOwnProperty('uid')) {
         requirementsMet = false;
     }
     if (requirementsMet) {
+        // event.payload.TableName = 'p8Events';
         let g = null;
         try {
             g = await dynamo.delete(event.payload).promise();
