@@ -138,6 +138,12 @@ async function deleteEvent(event, payload) {
     }
 }
 async function getActiveEvents() {
+    let payload = {
+        status: '400',
+        body: {
+            message: '', // message: 'Pate System Error',
+        },
+    };
     //returning events today or future
     const theDate = new Date(Date.now());
     const tDay = theDate.toISOString().substring(0, 10);
@@ -150,10 +156,24 @@ async function getActiveEvents() {
         FilterExpression: 'eventDate >= :v_date',
     };
     try {
+        let theEvents = [];
         // console.log('BEFORE dynamo query');
         const data = await dynamo.scan(uParams).promise();
         // console.log(data);
-        return data;
+        // we beleieve data = events
+        if (data.Count < 1) {
+            // we did not get any events returned from DB
+            payload.status = '400';
+            return payload;
+        } else {
+            // we have events returned, sort and send back
+            //throw responses into array
+            for (let i = 0; i < data.Count; i++) {
+                theEvents.push(data.Items[i]);
+            }
+            theEvents.sort(GetAscendSortOrder('eventDate'));
+            return theEvents;
+        }
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
@@ -173,4 +193,14 @@ function getUniqueId() {
     // Using concatenation
     encrypted = Buffer.concat([encrypted, cipher.final()]);
     return encrypted.toString('hex');
+}
+function GetAscendSortOrder(prop) {
+    return function (a, b) {
+        if (a[prop] > b[prop]) {
+            return 1;
+        } else if (a[prop] < b[prop]) {
+            return -1;
+        }
+        return 0;
+    };
 }
