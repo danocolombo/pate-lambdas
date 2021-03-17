@@ -31,14 +31,14 @@ exports.handler = async (event, context, callback) => {
                 statusCode: 200,
                 body: uData,
             };
-            return response; 
+            return response;
         case 'getUniqueId':
             let uid = getUniqueId();
             return uid;
         case 'createUser':
             // create unique id
-            let userId = getUniqueId();
-            event.payload.Item.uid = userId.toString();
+            //let userId = getUniqueId();
+            //event.payload.Item.uid = userId.toString();
             theUser = await dynamo.put(event.payload).promise();
             return event.payload;
         case 'updateUser':
