@@ -62,8 +62,12 @@ exports.handler = async (event, context, callback) => {
 
         case 'getEventsForRep':
             //this returns the Events where the uid passed in was the coordinator
-            Data = await getEvent(event.payload.uid);
-
+            eData = await getEventsForCoordinator(event.payload.uid);
+            response = {
+                statusCode: 200,
+                body: eData,
+            };
+            return response;
         case 'updateEvent':
             if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
@@ -118,7 +122,7 @@ async function getEvents() {
     }
 }
 // get all events for coordinator
-async function getEvents(cid) {
+async function getEventsForCoordinator(cid) {
     // get all events
     const tParams = {
         TableName: 'p8Events',
