@@ -124,20 +124,18 @@ async function getEvents() {
 // get all events for coordinator
 async function getEventsForCoordinator(cid) {
     // get all events
+
     const tParams = {
         TableName: 'p8Events',
     };
     try {
-        // console.log('BEFORE dynamo query');
         const data = await dynamo.scan(tParams).promise();
-        // console.log(data);
-
         let returnData = [];
-        data.forEach((evnt) => {
-            if (evnt?.coordinator?.id === cid) {
-                returnData = returnData.push(evnt);
+        for (let i = 0; i < data.Count; i++) {
+            if (data.Items[i].coordinator.id == cid) {
+                returnData.push(data.Items[i]);
             }
-        });
+        }
 
         return returnData;
     } catch (err) {
