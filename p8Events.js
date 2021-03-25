@@ -130,12 +130,14 @@ async function getEventsForCoordinator(cid) {
     };
     try {
         const data = await dynamo.scan(tParams).promise();
-        let returnData = [];
+        let rally = [];
         for (let i = 0; i < data.Count; i++) {
             if (data.Items[i].coordinator.id == cid) {
-                returnData.push(data.Items[i]);
+                rally.push(data.Items[i]);
             }
         }
+        let returnData = {};
+        returnData.Items = rally;
 
         return returnData;
     } catch (err) {
