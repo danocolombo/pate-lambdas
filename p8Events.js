@@ -60,6 +60,10 @@ exports.handler = async (event, context, callback) => {
             theEvent = await dynamo.put(event.payload).promise();
             return event.payload;
 
+        case 'getEventsForRep':
+            //this returns the Events where the uid passed in was the coordinator
+            Data = await getEvent(event.payload.uid);
+
         case 'updateEvent':
             if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
@@ -109,6 +113,29 @@ async function getEvents() {
         const data = await dynamo.scan(tParams).promise();
         // console.log(data);
         return data;
+    } catch (err) {
+        console.log('FAILURE in dynamoDB call', err.message);
+    }
+}
+// get all events for coordinator
+async function getEvents(cid) {
+    // get all events
+    const tParams = {
+        TableName: 'p8Events',
+    };
+    try {
+        // console.log('BEFORE dynamo query');
+        const data = await dynamo.scan(tParams).promise();
+        // console.log(data);
+
+        let returnData = [];
+        data.forEach((evnt) => {
+            if (evnt?.coordinator?.id === cid) {
+                returnData = returnData.push(evnt);
+            }
+        });
+
+        return returnData;
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
