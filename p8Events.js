@@ -51,12 +51,17 @@ exports.handler = async (event, context, callback) => {
         case 'deleteEvent':
             response = deleteEvent(event, payload);
             return response;
+        // case 'createLocation':
+        //         // create unique id
+        //         let locationId = getUniqueId();
+        //         event.payload.Item.uid = locationId.toString();
+        //         theLocation = await dynamo.put(event.payload).promise();
+        //         return event.payload;
         case 'createEvent':
             event.payload.TableName = 'p8Events';
-
+            let eventID = getUniqueId();
             // create unique id
-            let eventId = crypto.randomBytes(16).toString('base64');
-            event.payload.Item.uid = eventId.toString();
+            event.payload.Item.uid = eventID.toString();
             theEvent = await dynamo.put(event.payload).promise();
             return event.payload;
 
@@ -68,11 +73,24 @@ exports.handler = async (event, context, callback) => {
                 body: eData,
             };
             return response;
+        case 'getEventsForLead':
+            //this returns the Events where the uid passed in was the coordinator
+            if (!event.payload.Item.hasOwnProperty('stateID')) {
+                let err = { Message: 'ERROR-stateID is required' };
+                return err;
+            }
+            eData = await getEventsForLead(event.payload.Item.stateID);
+            response = {
+                statusCode: 200,
+                body: eData,
+            };
+            return response;
         case 'updateEvent':
             if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
                 return err;
             }
+
             event.payload.TableName = 'p8Events';
             theEvent = await dynamo.put(event.payload).promise();
             return event.payload;
@@ -140,6 +158,34 @@ async function getEventsForCoordinator(cid) {
         returnData.Items = rally;
 
         return returnData;
+    } catch (err) {
+        console.log('FAILURE in dynamoDB call', err.message);
+    }
+}
+// get all events for a particular state
+async function getEventsForLead(sid) {
+    // get all events
+
+    const tParams = {
+        TableName: 'p8Events',
+        FilterExpression: 'contains(stateProv, :stateProv)',
+        ExpressionAttributeValues: {
+            ':stateProv': sid,
+        },
+    };
+    try {
+        const data = await dynamo.scan(tParams).promise();
+        // let rally = [];
+        // for (let i = 0; i < data.Count; i++) {
+        //     if (data.Items[i].stateProv == sid) {
+        //         rally.push(data.Items[i]);
+        //     }
+        // }
+        // let returnData = {};
+        // returnData.Items = rally;
+
+        // return returnData;
+        return data;
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
