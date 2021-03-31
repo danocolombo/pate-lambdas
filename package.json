@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "test": "node -e \"(async () => console.log(await require('./generic-start').handler({})))();\"",
+        "maintainEventNumbers": "node -e \"(async () => console.log(await require('./p8Events').handler({'operation': 'maintainNumbers','payload': {'uid': '65ff55fb33fe4c0447b086188f2e9b1g','adjustments': {'registrationCount': '2','mealCount': '2'}}})))();\"",
         "userCreate": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'createUser','payload': {'Item': {'displayName': 'Teddy Smith','role': 'guest'}}})))();\"",
         "userGet": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'getUser', 'payload': {'uid': '8e800361b50c5a091c4d7c83d32caaf2'}})))();\"",
         "userUpdate": "node -e \"(async () => console.log(await require('./p8Users').handler({'operation': 'updateUser','payload': {'Item': {'uid': '8e800361b50c5a091c4d7c83d32caaf2','displayName': 'Theo Smith','role': 'guest', 'address':{'street': '2123 Main St.', 'city': 'Atlanta', 'state': 'GA', 'postalCode': 39909}, 'userName': 'teddy'}}})))();\"",

@@ -85,6 +85,24 @@ exports.handler = async (event, context, callback) => {
                 body: eData,
             };
             return response;
+        case 'maintainNumbers':
+            if (!event.payload.hasOwnProperty('uid')) {
+                let err = { Message: 'ERROR-uid is required' };
+                return err;
+            }
+            //we get the possibility of 4 settings
+            // 1. registerationCount (registrations)
+            // 2. mealCount (meal/mealCount)
+            // 3. attendeeCount (attendance)
+            // 4. mealsServed (meal/mealsServed)
+            // eData = { eid: event.payload.uid };
+            eData = await maintainEventNumbers(event.payload);
+            response = {
+                statusCode: 200,
+                body: eData,
+            };
+            return response;
+
         case 'updateEvent':
             if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
@@ -133,7 +151,7 @@ async function getEvents() {
     try {
         // console.log('BEFORE dynamo query');
         const data = await dynamo.scan(tParams).promise();
-        // console.log(data);
+        // console.log(JSON.parse(data));
         return data;
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
@@ -145,19 +163,24 @@ async function getEventsForCoordinator(cid) {
 
     const tParams = {
         TableName: 'p8Events',
+        FilterExpression: 'contains(coordinator.id, :cid)',
+        ExpressionAttributeValues: {
+            ':cid': cid,
+        },
     };
     try {
         const data = await dynamo.scan(tParams).promise();
-        let rally = [];
-        for (let i = 0; i < data.Count; i++) {
-            if (data.Items[i].coordinator.id == cid) {
-                rally.push(data.Items[i]);
-            }
-        }
-        let returnData = {};
-        returnData.Items = rally;
+        // let rally = [];
+        // for (let i = 0; i < data.Count; i++) {
+        //     if (data.Items[i].coordinator.id == cid) {
+        //         rally.push(data.Items[i]);
+        //     }
+        // }
+        // let returnData = {};
+        // returnData.Items = rally;
 
-        return returnData;
+        // return returnData;
+        return data;
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
@@ -280,4 +303,81 @@ function GetAscendSortOrder(prop) {
         }
         return 0;
     };
+}
+
+function maintainEventNumbers(request) {
+    /*
+        it should look like this....
+        "request": {
+            "uid": "65ff55fb33fe4c0447b086188f2e9b1g",
+            "adjustments": {
+                "registrationCount": "2",
+                "mealCount": "2",
+                "attendance": "0",
+                "mealsServed": "0",
+            }
+        }
+
+        NOTE that the adjustments can vary from to all 4
+
+    */
+    let adjustments = request.adjustments;
+    let adjReg = request.adjustments.hasOwnProperty('registrationCount');
+    let adjMeal = request.adjustments.hasOwnProperty('mealCount');
+    let adjAttend = request.adjustments.hasOwnProperty('attendance');
+    let adjServed = request.adjustments.hasOwnProperty('mealsServed');
+    //now get the event
+    let resp = getEvent(request.uid);
+
+    //!!!!!!!!!!!!!!!!!!!!!!
+    // need error handling in case bad uid provided.
+    let theEvent = resp.body.Item;
+    return theEvent;
+    if (adjReg) {
+        //need to update registration value
+        // console.log(
+        //     'theEvent.registrations:' + parseInt(theEvent.registations)
+        // );
+        // let currentValue = parseInt(theEvent.registrations);
+        console.log('theEvent.registrations:' + theEvent.registrations);
+        let updatedValue = parseInt(theEvent.registrations) + parseInt(adjReg);
+        theEvent.registrations = updatedValue;
+    }
+    // if (adjMeal) {
+    //     //need to update registration value
+    //     // let currentValue = parseInt(theEvent.meal.mealCount);
+    //     let updatedValue =
+    //         parseInt(theEvent.meal.mealCount) + parseInt(adjMeal);
+    //     theEvent.meal.mealCount = updatedValue;
+    // }
+    // if (adjAttend) {
+    //     //need to update registration value
+    //     // let currentValue = parseInt(theEvent.meal.mealCount);
+    //     let updatedValue = parseInt(theEvent.attendance) + parseInt(adjAttend);
+    //     theEvent.attendance = updatedValue;
+    // }
+    // if (adjServed) {
+    //     //need to update registration value
+    //     // let currentValue = parseInt(theEvent.meal.mealCount);
+    //     let updatedValue =
+    //         parseInt(theEvent.meal.mealsServed) + parseInt(adjServed);
+    //     theEvent.meal.mealsServed = updatedValue;
+    // }
+    //now save the event, build the request
+    let theRequest = {
+        TableName: 'p8Events',
+        Item: theEvent,
+    };
+    // async function updateTheRegistration() {
+    //     let results = await dynamo.put(theRequest).promise();
+    // }
+    // updateTheRegistration();
+
+    // let response = {
+    //     reg: adjReg,
+    //     meal: adjMeal,
+    //     attend: adjAttend,
+    //     fed: adjServed,
+    // };
+    return theRequst;
 }
