@@ -39,10 +39,14 @@ exports.handler = async (event, context, callback) => {
             theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
         case 'updateRegistration':
-            if (!event.payload.Key.hasOwnProperty('uid')) {
+            if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
                 return err;
             }
+            console.log('++++++++++++++++++++++++++++');
+            console.log(event.payload);
+            console.log('++++++++++++++++++++++++++++');
+
             theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
         case 'deleteRegistration':
