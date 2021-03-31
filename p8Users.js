@@ -31,7 +31,7 @@ exports.handler = async (event, context, callback) => {
                 statusCode: 200,
                 body: uData,
             };
-            return response; 
+            return response;
         case 'getUniqueId':
             let uid = getUniqueId();
             return uid;

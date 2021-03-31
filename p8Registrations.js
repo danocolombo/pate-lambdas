@@ -11,7 +11,7 @@ var dynamo = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
  */
 
 exports.handler = async (event, context, callback) => {
-    //console.log('Received event:', JSON.stringify(event, null, 2));
+    console.log('Received event:', JSON.stringify(event, null, 2));
 
     var operation = event.operation;
     let payload = {
@@ -39,7 +39,7 @@ exports.handler = async (event, context, callback) => {
             theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
         case 'updateRegistration':
-            if (!event.payload.Item.hasOwnProperty('uid')) {
+            if (!event.payload.Key.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
                 return err;
             }
@@ -48,6 +48,31 @@ exports.handler = async (event, context, callback) => {
         case 'deleteRegistration':
             response = deleteRegistration(event, payload);
             return response;
+        case 'getAllUserRegistrations':
+            // this needs to return all the entries from p8events where rid = passed in value
+            // get the registrar id from event
+            let registrarId = null;
+            try {
+                let rid = event.payload.rid;
+                registrarId = rid;
+            } catch (error) {
+                let err = { Message: 'ERROR-rid is required' };
+                return err;
+            }
+            try {
+                rData = await getAllUserRegistrations(registrarId);
+                response = {
+                    statusCode: 200,
+                    body: rData,
+                };
+            } catch (error) {
+                let err = {
+                    Message: 'getAllUserRegistrations function failed.',
+                };
+                return err;
+            }
+            return response;
+
         default:
             payload.status = '400';
             payload.body.message =
@@ -56,6 +81,26 @@ exports.handler = async (event, context, callback) => {
             return payload;
     }
 };
+async function getAllUserRegistrations(var1) {
+    const uParams = {
+        TableName: 'p8Registrations',
+        IndexName: 'rid-index',
+        KeyConditionExpression: 'rid = :v_rid',
+        ExpressionAttributeValues: {
+            ':v_rid': var1,
+        },
+    };
+    try {
+        // console.log('BEFORE dynamo query');
+        // console.log('rid:' + var1);
+        const data = await dynamo.query(uParams).promise();
+        // console.log(data);
+        return data;
+    } catch (err) {
+        console.log('FAILURE in dynamoDB call', err.message);
+        return err;
+    }
+}
 async function getRegistration(var1) {
     const uParams = {
         TableName: 'p8Registrations',
