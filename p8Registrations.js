@@ -39,7 +39,7 @@ exports.handler = async (event, context, callback) => {
             theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
         case 'updateRegistration':
-            if (!event.payload.Key.hasOwnProperty('uid')) {
+            if (!event.payload.Item.hasOwnProperty('uid')) {
                 let err = { Message: 'ERROR-uid is required' };
                 return err;
             }
@@ -99,10 +99,10 @@ async function getRegistrationsForEvent(eid) {
 
     const tParams = {
         TableName: 'p8Registrations',
-        FilterExpression: "contains(eid, :eid)",
+        FilterExpression: 'contains(eid, :eid)',
         ExpressionAttributeValues: {
-            ":eid": eid
-        }
+            ':eid': eid,
+        },
     };
     try {
         const data = await dynamo.scan(tParams).promise();
@@ -111,8 +111,6 @@ async function getRegistrationsForEvent(eid) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
 }
-
-
 
 async function getAllUserRegistrations(var1) {
     const uParams = {
@@ -169,7 +167,12 @@ async function deleteRegistration(event) {
             return successResponse;
         } catch (error) {
             let returnMsg =
-                'Error Deleting: ' + error + '\n ' + deleteResponse + '\n' + event.payload;
+                'Error Deleting: ' +
+                error +
+                '\n ' +
+                deleteResponse +
+                '\n' +
+                event.payload;
             return returnMsg;
         }
     } else {
