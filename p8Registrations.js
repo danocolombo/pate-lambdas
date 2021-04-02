@@ -46,7 +46,19 @@ exports.handler = async (event, context, callback) => {
             theRegistration = await dynamo.put(event.payload).promise();
             return event.payload;
         case 'deleteRegistration':
-            response = deleteRegistration(event, payload);
+            rData = deleteRegistration(event);
+            return rData;
+        case 'getRegistrationsForEvent':
+            // get all the registrations for an event
+            if (!event.payload.hasOwnProperty('eid')) {
+                let err = { Message: 'ERROR-eid is required' };
+                return err;
+            }
+            rData = await getRegistrationsForEvent(event.payload.eid);
+            response = {
+                statusCode: 200,
+                body: rData,
+            };
             return response;
         case 'getAllUserRegistrations':
             // this needs to return all the entries from p8events where rid = passed in value
@@ -81,6 +93,27 @@ exports.handler = async (event, context, callback) => {
             return payload;
     }
 };
+//getRegistrationsForEvent
+async function getRegistrationsForEvent(eid) {
+    // get all events
+
+    const tParams = {
+        TableName: 'p8Registrations',
+        FilterExpression: "contains(eid, :eid)",
+        ExpressionAttributeValues: {
+            ":eid": eid
+        }
+    };
+    try {
+        const data = await dynamo.scan(tParams).promise();
+        return data;
+    } catch (err) {
+        console.log('FAILURE in dynamoDB call', err.message);
+    }
+}
+
+
+
 async function getAllUserRegistrations(var1) {
     const uParams = {
         TableName: 'p8Registrations',
@@ -119,25 +152,29 @@ async function getRegistration(var1) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
 }
-async function deleteRegistration(event, payload) {
+async function deleteRegistration(event) {
     let requirementsMet = true;
     if (!event.payload.Key.hasOwnProperty('uid')) {
         requirementsMet = false;
     }
     if (requirementsMet) {
         // event.payload.TableName = 'p8Events';
-        let g = null;
+        let deleteResponse = null;
         try {
-            g = await dynamo.delete(event.payload).promise();
-            return event.payload;
+            deleteResponse = await dynamo.delete(event.payload).promise();
+            let successResponse = {
+                status: '200',
+                body: deleteResponse,
+            };
+            return successResponse;
         } catch (error) {
             let returnMsg =
-                'Error Deleting: ' + error + '\n ' + g + '\n' + event.payload;
+                'Error Deleting: ' + error + '\n ' + deleteResponse + '\n' + event.payload;
             return returnMsg;
         }
     } else {
         payload.status = '406';
-        payload.body.message = 'Pate Error: deleting location';
+        payload.body.message = 'Pate Error: deleting registration';
         return payload;
     }
 }
