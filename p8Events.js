@@ -51,12 +51,6 @@ exports.handler = async (event, context, callback) => {
         case 'deleteEvent':
             response = deleteEvent(event, payload);
             return response;
-        // case 'createLocation':
-        //         // create unique id
-        //         let locationId = getUniqueId();
-        //         event.payload.Item.uid = locationId.toString();
-        //         theLocation = await dynamo.put(event.payload).promise();
-        //         return event.payload;
         case 'createEvent':
             event.payload.TableName = 'p8Events';
             let eventID = getUniqueId();
@@ -169,18 +163,16 @@ async function getEventsForCoordinator(cid) {
         },
     };
     try {
+        let theEvents = [];
         const data = await dynamo.scan(tParams).promise();
-        // let rally = [];
-        // for (let i = 0; i < data.Count; i++) {
-        //     if (data.Items[i].coordinator.id == cid) {
-        //         rally.push(data.Items[i]);
-        //     }
-        // }
-        // let returnData = {};
-        // returnData.Items = rally;
 
-        // return returnData;
-        return data;
+        // we have events returned, sort and send back
+        //throw responses into array
+        for (let i = 0; i < data.Count; i++) {
+            theEvents.push(data.Items[i]);
+        }
+        theEvents.sort(GetAscendSortOrder('eventDate'));
+        return theEvents;
     } catch (err) {
         console.log('FAILURE in dynamoDB call', err.message);
     }
@@ -354,40 +346,41 @@ async function maintainEventNumbers(request) {
 
     if (ADJ_REGISTRATIONS) {
         const DELTA_REGISTRATIONS = parseInt(
-            request.adjustments.registrationCount,10
+            request.adjustments.registrationCount,
+            10
         );
-        if (parseInt(WAS_REGISTRATIONS,10) + DELTA_REGISTRATIONS < 1) {
+        if (parseInt(WAS_REGISTRATIONS, 10) + DELTA_REGISTRATIONS < 1) {
             workingEvent.registrations = 0;
         } else {
             workingEvent.registrations =
-                parseInt(WAS_REGISTRATIONS,10) + DELTA_REGISTRATIONS;
+                parseInt(WAS_REGISTRATIONS, 10) + DELTA_REGISTRATIONS;
         }
     }
     if (ADJ_MEAL_PLAN) {
-        const DELTA_MEAL_PLAN = parseInt(request.adjustments.mealCount,10);
-        if (parseInt(WAS_MEAL_PLAN,10) + DELTA_MEAL_PLAN < 1) {
+        const DELTA_MEAL_PLAN = parseInt(request.adjustments.mealCount, 10);
+        if (parseInt(WAS_MEAL_PLAN, 10) + DELTA_MEAL_PLAN < 1) {
             workingEvent.meal.mealCount = 0;
         } else {
             workingEvent.meal.mealCount =
-                parseInt(WAS_MEAL_PLAN,10) + DELTA_MEAL_PLAN;
+                parseInt(WAS_MEAL_PLAN, 10) + DELTA_MEAL_PLAN;
         }
     }
     if (ADJ_ATTENDANCE) {
-        const DELTA_ATTENDANCE = parseInt(request.adjustments.attendance,10);
-        if (parseInt(WAS_ATTENDANCE,10) + DELTA_ATTENDANCE < 1) {
+        const DELTA_ATTENDANCE = parseInt(request.adjustments.attendance, 10);
+        if (parseInt(WAS_ATTENDANCE, 10) + DELTA_ATTENDANCE < 1) {
             workingEvent.attendance = 0;
         } else {
             workingEvent.attendance =
-                parseInt(WAS_ATTENDANCE,10) + DELTA_ATTENDANCE;
+                parseInt(WAS_ATTENDANCE, 10) + DELTA_ATTENDANCE;
         }
     }
     if (ADJ_MEALS_FED) {
-        const DELTA_MEALS_FED = parseInt(request.adjustments.mealsServed,10);
-        if (parseInt(WAS_MEALS_FED,10) + DELTA_MEALS_FED < 1) {
+        const DELTA_MEALS_FED = parseInt(request.adjustments.mealsServed, 10);
+        if (parseInt(WAS_MEALS_FED, 10) + DELTA_MEALS_FED < 1) {
             workingEvent.meal.mealsServed = 0;
         } else {
             workingEvent.meal.mealsServed =
-                parseInt(WAS_MEALS_FED,10) + DELTA_MEALS_FED;
+                parseInt(WAS_MEALS_FED, 10) + DELTA_MEALS_FED;
         }
     }
     //now save the event, build the request
